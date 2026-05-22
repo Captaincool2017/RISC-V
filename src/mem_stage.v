@@ -28,11 +28,19 @@ module mem_stage (
     always @(posedge clk) begin
         if (mem_write_in && !reset) begin
             case (funct3_in)
-                3'b000: begin // SB - store byte
-                    data_memory[alu_result_in[11:2]][alu_result_in[1:0]*8 +: 8] <= write_data_in[7:0];
+                3'b000: begin // SB
+                    case (alu_result_in[1:0])
+                        2'b00: data_memory[alu_result_in[11:2]][7:0]   <= write_data_in[7:0];
+                        2'b01: data_memory[alu_result_in[11:2]][15:8]  <= write_data_in[7:0];
+                        2'b10: data_memory[alu_result_in[11:2]][23:16] <= write_data_in[7:0];
+                        2'b11: data_memory[alu_result_in[11:2]][31:24] <= write_data_in[7:0];
+                    endcase
                 end
-                3'b001: begin // SH - store halfword
-                    data_memory[alu_result_in[11:2]][alu_result_in[1]*16 +: 16] <= write_data_in[15:0];
+                3'b001: begin // SH
+                    case (alu_result_in[1])
+                        1'b0: data_memory[alu_result_in[11:2]][15:0]  <= write_data_in[15:0];
+                        1'b1: data_memory[alu_result_in[11:2]][31:16] <= write_data_in[15:0];
+                    endcase
                 end
                 3'b010: begin // SW - store word
                     data_memory[alu_result_in[11:2]] <= write_data_in;
@@ -45,13 +53,35 @@ module mem_stage (
     always @(*) begin
         if (mem_read_in) begin
             case (funct3_in)
-                3'b000: read_data_out = {{24{data_memory[alu_result_in[11:2]][alu_result_in[1:0]*8 + 7]}}, 
-                                        data_memory[alu_result_in[11:2]][alu_result_in[1:0]*8 +: 8]}; // LB
-                3'b001: read_data_out = {{16{data_memory[alu_result_in[11:2]][alu_result_in[1]*16 + 15]}}, 
-                                        data_memory[alu_result_in[11:2]][alu_result_in[1]*16 +: 16]}; // LH
+                3'b000: begin // LB
+                    case (alu_result_in[1:0])
+                        2'b00: read_data_out = {{24{data_memory[alu_result_in[11:2]][7]}},  data_memory[alu_result_in[11:2]][7:0]};
+                        2'b01: read_data_out = {{24{data_memory[alu_result_in[11:2]][15]}}, data_memory[alu_result_in[11:2]][15:8]};
+                        2'b10: read_data_out = {{24{data_memory[alu_result_in[11:2]][23]}}, data_memory[alu_result_in[11:2]][23:16]};
+                        2'b11: read_data_out = {{24{data_memory[alu_result_in[11:2]][31]}}, data_memory[alu_result_in[11:2]][31:24]};
+                    endcase
+                end
+                3'b001: begin // LH
+                    case (alu_result_in[1])
+                        1'b0: read_data_out = {{16{data_memory[alu_result_in[11:2]][15]}}, data_memory[alu_result_in[11:2]][15:0]};
+                        1'b1: read_data_out = {{16{data_memory[alu_result_in[11:2]][31]}}, data_memory[alu_result_in[11:2]][31:16]};
+                    endcase
+                end
                 3'b010: read_data_out = data_memory[alu_result_in[11:2]];                                 // LW
-                3'b100: read_data_out = {24'b0, data_memory[alu_result_in[11:2]][alu_result_in[1:0]*8 +: 8]}; // LBU
-                3'b101: read_data_out = {16'b0, data_memory[alu_result_in[11:2]][alu_result_in[1]*16 +: 16]}; // LHU
+                3'b100: begin // LBU
+                    case (alu_result_in[1:0])
+                        2'b00: read_data_out = {24'b0, data_memory[alu_result_in[11:2]][7:0]};
+                        2'b01: read_data_out = {24'b0, data_memory[alu_result_in[11:2]][15:8]};
+                        2'b10: read_data_out = {24'b0, data_memory[alu_result_in[11:2]][23:16]};
+                        2'b11: read_data_out = {24'b0, data_memory[alu_result_in[11:2]][31:24]};
+                    endcase
+                end
+                3'b101: begin // LHU
+                    case (alu_result_in[1])
+                        1'b0: read_data_out = {16'b0, data_memory[alu_result_in[11:2]][15:0]};
+                        1'b1: read_data_out = {16'b0, data_memory[alu_result_in[11:2]][31:16]};
+                    endcase
+                end
                 default: read_data_out = 32'hxxxxxxxx;
             endcase
         end else begin

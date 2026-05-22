@@ -1,14 +1,10 @@
 `timescale 1ns / 1ps
 
-module hazard_detection_unit (
-    input        clk,                 
+module hazard_detection_unit (                 
     input        reset,               
     input [31:0] if_id_instruction_in,
     input        id_ex_mem_read_in,
     input [4:0]  id_ex_rd_in,
-    input [4:0]  id_ex_rs1_addr_in,
-    input [4:0]  id_ex_rs2_addr_in,
-    input        ex_branch_in,
     input        ex_branch_taken_in,
     input        div_mul_stall_in,
 

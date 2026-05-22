@@ -71,7 +71,7 @@ module ex_stage (
     end
 
     // Divider state machine
-    localparam S_IDLE = 2'b00, S_DIVIDE = 2'b01, S_REM = 2'b10, S_DONE = 2'b11;
+    localparam S_IDLE = 2'b00, S_DIVIDE = 2'b01, S_DONE = 2'b11;
     reg [1:0] div_state;
     reg [31:0] dividend, divisor, quotient, remainder;
     reg [5:0]  div_counter;
@@ -115,7 +115,7 @@ module ex_stage (
         alu_op2 = alu_src_in ? immediate_in : operand2_forwarded;
 
         if (mul_en_in) alu_result_out = mul_result;
-        else if (div_en_in && div_active) alu_result_out = (alu_op_in[2:0] == 3'b110 || alu_op_in[2:0] == 3'b111) ? remainder : quotient;
+        else if (div_en_in && (div_active || div_state == S_DONE)) alu_result_out = (alu_op_in[2:0] == 3'b110 || alu_op_in[2:0] == 3'b111) ? remainder : quotient;
         else begin
             case (alu_op_in)
                 4'b0000: alu_result_out = operand1_forwarded + alu_op2; // ADD

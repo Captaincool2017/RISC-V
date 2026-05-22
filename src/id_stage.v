@@ -8,6 +8,7 @@ module id_stage (
     input [4:0]  wb_rd_in,
     input [31:0] wb_write_data_in,
     input        wb_reg_write_in,
+    input [31:0] pc_in,
 
     output reg [2:0]  funct3_out,
     output reg [31:0] operand1_out,
@@ -22,8 +23,6 @@ module id_stage (
     output reg        branch_out,
     output reg        jal_out,
     output reg        jalr_out,
-    output reg [31:0] rs1_data_out,
-    output reg [31:0] rs2_data_out,
     output reg [4:0]  rs1_addr_out,
     output reg [4:0]  rs2_addr_out,
     output reg        mul_en_out,
@@ -75,8 +74,6 @@ module id_stage (
         branch_out = 1'b0; 
         jal_out = 1'b0; 
         jalr_out = 1'b0;
-        rs1_data_out = rs1_val; 
-        rs2_data_out = rs2_val;
         rs1_addr_out = rs1; 
         rs2_addr_out = rs2; 
         mul_en_out = 1'b0; 
@@ -169,7 +166,8 @@ module id_stage (
                 alu_op_out = 4'b0000; alu_src_out = 1'b1; 
             end
             7'b0010111: begin // AUIPC
-                reg_write_out = 1'b1; rd_out = rd; immediate_out = u_immediate; operand1_out = pc_plus_4_in - 4; 
+                reg_write_out = 1'b1; rd_out = rd; immediate_out = u_immediate; 
+                operand1_out = pc_in; 
                 alu_op_out = 4'b0000; alu_src_out = 1'b1;
             end
         endcase

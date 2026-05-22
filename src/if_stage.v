@@ -41,10 +41,10 @@ module if_stage (
     always @(*) begin
         if (flush_en) begin
             instruction_out = 32'h00000013; // NOP
-            pc_plus_4_out = pc + 4;
+            pc_plus_4_out   = 32'h00000000; // no valid PC for a flushed instruction
         end else begin
             instruction_out = raw_instr;
-            pc_plus_4_out = pc + 4;
+            pc_plus_4_out   = pc + 4;
         end
     end
 endmodule
