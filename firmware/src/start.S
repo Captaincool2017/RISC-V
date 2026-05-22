@@ -1,7 +1,7 @@
 .section .text.init
 .global _start
 _start:
-    li sp, 0x0700      # was 0x07F8 — moved away from MMIO at 0x07F8/0x07FC
+    li sp, 0x05FC
 
     jal ra, main
 

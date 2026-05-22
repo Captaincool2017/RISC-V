@@ -30,7 +30,7 @@ module if_stage (
     always @(posedge clk or posedge reset) begin
         if (reset) begin
             pc <= 32'h00000000;
-        end else if (!stall_en || ex_branch_taken_in) begin
+        end else if (!stall_en) begin
             pc <= next_pc;
         end
     end

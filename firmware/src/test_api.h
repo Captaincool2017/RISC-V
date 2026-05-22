@@ -3,6 +3,7 @@
 
 #define TB_CTRL_ADDR   0x07FC
 #define TB_RESULT_ADDR 0x07F8
+// Stack must stay below 0x07F0 — collision = silent wrong result
 
 static inline void test_pass() {
     *((volatile int *)TB_CTRL_ADDR) = 1;

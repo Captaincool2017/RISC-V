@@ -27,7 +27,7 @@ $RestOfPath = $FirmwareDir.Substring(2).Replace('\', '/')
 $WslFirmwareDir = "/mnt/$DriveLetter$RestOfPath"
 
 # CHANGED: Compiles *.c so any C file in the directory gets compiled!
-$gccCommand = "riscv64-unknown-elf-gcc -march=rv32i -mabi=ilp32 -nostdlib -T$WslFirmwareDir/src/link.ld -O1 -o $WslFirmwareDir/build/firmware.elf $WslFirmwareDir/src/start.S $WslFirmwareDir/src/*.c"
+$gccCommand = "riscv64-unknown-elf-gcc -march=rv32im -mabi=ilp32 -nostdlib -T$WslFirmwareDir/src/link.ld -O1 -o $WslFirmwareDir/build/firmware.elf $WslFirmwareDir/src/start.S $WslFirmwareDir/src/*.c"
 wsl -e bash -c $gccCommand
 
 if ($LASTEXITCODE -ne 0) { Write-Host "Error compiling C code!" -ForegroundColor Red; exit }

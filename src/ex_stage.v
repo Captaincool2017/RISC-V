@@ -58,6 +58,7 @@ module ex_stage (
     wire [63:0] mul_su = $signed(operand1_forwarded) * $signed({1'b0, operand2_forwarded});
     wire [63:0] mul_uu = operand1_forwarded * operand2_forwarded;
     reg [31:0] mul_result;
+    reg [31:0] div_result_reg;
     
     always @(*) begin
         mul_result = 32'h00000000;
@@ -76,33 +77,30 @@ module ex_stage (
     reg [31:0] dividend, divisor, quotient, remainder;
     reg [5:0]  div_counter;
     reg        div_active;
+    reg [2:0] div_funct3_reg;
+
+    // Remove S_IDLE/S_DIVIDE/S_DONE state machine entirely
+    // Replace sequential always block divider section with:
 
     always @(posedge clk or posedge reset) begin
         if (reset) begin
-            div_state <= S_IDLE;
             div_mul_stall_out <= 1'b0;
-            div_active <= 1'b0;
+            div_result_reg    <= 32'b0;
+            div_funct3_reg    <= 3'b0;
         end else begin
-            case (div_state)
-                S_IDLE: begin
-                    if (div_en_in) begin
-                        dividend <= operand1_forwarded;
-                        divisor <= operand2_forwarded;
-                        quotient <= 0; remainder <= 0; div_counter <= 32; div_active <= 1'b1;
-                        div_mul_stall_out <= 1'b1;
-                        div_state <= S_DIVIDE;
-                    end else div_mul_stall_out <= 1'b0;
-                end
-                S_DIVIDE: begin
-                    if (div_counter > 0) begin
-                        if (remainder[31]) begin remainder <= (remainder << 1) + divisor; quotient <= (quotient << 1) | 1'b0; end
-                        else begin remainder <= (remainder << 1) - divisor; quotient <= (quotient << 1) | 1'b1; end
-                        div_counter <= div_counter - 1;
-                    end else begin div_active <= 1'b0; div_mul_stall_out <= 1'b0; div_state <= S_DONE; end
-                end
-                S_DONE: if (!div_en_in) div_state <= S_IDLE;
-                default: div_state <= S_IDLE;
-            endcase
+            if (div_en_in && div_mul_stall_out == 1'b0) begin
+                // capture inputs and compute immediately
+                div_funct3_reg <= alu_op_in[2:0];
+                case (alu_op_in[2:0])
+                    3'b100: div_result_reg <= $signed(operand1_forwarded) / $signed(operand2_forwarded); // DIV
+                    3'b101: div_result_reg <= operand1_forwarded / operand2_forwarded;                   // DIVU
+                    3'b110: div_result_reg <= $signed(operand1_forwarded) % $signed(operand2_forwarded); // REM
+                    3'b111: div_result_reg <= operand1_forwarded % operand2_forwarded;                   // REMU
+                endcase
+                div_mul_stall_out <= 1'b1;  // stall one cycle for result to register
+            end else begin
+                div_mul_stall_out <= 1'b0;  // release next cycle
+            end
         end
     end
 
@@ -115,7 +113,8 @@ module ex_stage (
         alu_op2 = alu_src_in ? immediate_in : operand2_forwarded;
 
         if (mul_en_in) alu_result_out = mul_result;
-        else if (div_en_in && (div_active || div_state == S_DONE)) alu_result_out = (alu_op_in[2:0] == 3'b110 || alu_op_in[2:0] == 3'b111) ? remainder : quotient;
+        else if (div_en_in && !div_mul_stall_out)
+            alu_result_out = div_result_reg;
         else begin
             case (alu_op_in)
                 4'b0000: alu_result_out = operand1_forwarded + alu_op2; // ADD
