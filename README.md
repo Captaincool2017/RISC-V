@@ -1,51 +1,35 @@
-# RISC-V Project
+# RISC-V Custom Processor (RV32I Pipeline)
 
-## Overview
-
-This repository is dedicated to exploring and implementing various aspects of the RISC-V (Reduced Instruction Set Computing) architecture. RISC-V is an open-source hardware instruction set architecture (ISA) that is rapidly gaining traction in the fields of computing and embedded systems.
-The goal of this project is to provide a deeper understanding of the RISC-V architecture by offering examples, tools, and guides that can be used for learning, testing, and development. Whether you're a student, hobbyist, or a professional, this repository serves as a resource to kickstart your journey with RISC-V.
-
-## Instruction Set
-The core supports the following RISC-V instructions:
-- **Arithmetic Operations**: `add`, `sub`
-- **Logical Operations**: `and`, `or`
-- **Other Instructions**: `load`, `store`
+A custom 5-stage pipelined RISC-V (RV32I) processor implemented in Verilog. This project includes a complete simulation environment and an automated build toolchain for running bare-metal C applications.
 
 ## Features
+* **5-Stage Pipeline**: IF, ID, EX, MEM, WB stages.
+* **Hazard Handling**: Full support for Load-Use and Branch hazards with forwarding logic and stall units.
+* **Automated Toolchain**: Cross-compiles C/Assembly code using `riscv64-unknown-elf-gcc` and executes via Vivado XSim.
+* **Bare-Metal Support**: Minimal startup code (`crt0.S`) and a custom test API for immediate simulation feedback.
 
-* **Assembly Programming**: Examples of RISC-V assembly language code to demonstrate the basic functionalities and structure.
-* **Simulation Environment**: Guides and tools to set up a RISC-V simulation environment using popular tools like Vivado.
+## Project Structure
+* `/src`: Verilog hardware source code.
+* `/tb`: Simulation testbench.
+* `/firmware`: C/Assembly source code and build scripts.
+* `/scripts`: Automation utilities for Windows/WSL interoperability.
 
 ## Getting Started
 
 ### Prerequisites
+* **Windows** with Vivado installed.
+* **WSL (Windows Subsystem for Linux)** with the [RISC-V GNU Toolchain](https://github.com/riscv-collab/riscv-gnu-toolchain) installed.
 
-To get started with the content in this repository, you will need:
+### Running a Simulation
+1. Write your code in `/firmware/src/`.
+2. Open PowerShell in the project root.
+3. Run the automation script:
+   `.\scripts\build_and_run.ps1`
 
-* A suitable emulator like Vivado.
-* A basic understanding of assembly language programming.
+The script will compile the firmware, generate the memory initialization file, and launch the Vivado simulation automatically.
 
-### Installation
+## Testing
+The testbench uses Memory-Mapped I/O (MMIO). Your C code can signal the simulator by writing to specific reserved addresses (0x07FC):
 
-1. **Clone the Repository:**
-
-   ```bash
-   git clone https://github.com/Captaincool2017/RISC-V.git
-   cd RISC-V
-   ```
-
-2. **Running a Simulation:**
-   * You can use Vivado to simulate RISC-V programs. 
-
-
-## Contributing
-
-We welcome contributions to improve this repository. If you have any ideas or improvements, feel free to submit a pull request. Please follow the contributing guidelines outlined in the repository.
-
-## License
-
-This project is licensed under the MIT License. See the `LICENSE` file for more details.
-
-## Contact
-
-If you have any questions, suggestions, or feedback, feel free to reach out by opening an issue on this repository.
+* `test_pass()`: Ends simulation with a PASS status.
+* `test_done_with_result(int)`: Ends simulation and prints the value.

@@ -1,0 +1,17 @@
+# Vivado/Simulation junk
+sim_proj/
+*.log
+*.jou
+*.vcd
+*.wdb
+*.pb
+*.ini
+.Xil/
+
+# Build artifacts
+firmware/build/
+
+# IDE/OS files
+.vscode/
+.DS_Store
+Thumbs.db
