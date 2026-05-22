@@ -73,14 +73,16 @@ module core (
         .div_mul_stall_out(div_mul_stall), .alu_result_out(ex_alu_res), .write_data_out(ex_write_data), 
         .branch_taken_out(ex_branch_taken), .branch_target_out(ex_branch_target) 
     );
+
+    wire mem_branch_flag;
     pipeline_register_ex_mem EX_MEM (
         .clk(clk), .reset(reset), .stall_en(stall_en), .flush_en(1'b0), // Changed to 1'b0 so branch writes aren't lost
         .pc_plus_4_in(ex_pc_plus_4), .alu_result_in(ex_alu_res), .write_data_in(ex_write_data), .rd_in(ex_rd), 
         .mem_read_in(ex_mem_read), .mem_write_in(ex_mem_write), .mem_to_reg_in(ex_mem_to_reg), .reg_write_in(ex_reg_write), 
-        .branch_in(ex_branch), .jal_in(ex_jal), .jalr_in(ex_jalr), .branch_taken_in(ex_branch_taken),
+        .jal_in(ex_jal), .jalr_in(ex_jalr), .branch_taken_in(ex_branch_taken),
         .pc_plus_4_out(mem_pc_plus_4), .alu_result_out(mem_alu_res), .write_data_out(mem_write_data), .rd_out(mem_rd), 
         .mem_read_out(mem_mem_read), .mem_write_out(mem_mem_write), .mem_to_reg_out(mem_mem_to_reg), .reg_write_out(mem_reg_write), 
-        .branch_out(mem_branch_taken), .jal_out(mem_jal), .jalr_out(mem_jalr), .branch_taken_out(mem_branch_taken) 
+        .jal_out(mem_jal), .jalr_out(mem_jalr), .branch_taken_out(mem_branch_taken) 
     );
     mem_stage MEM (
         .clk(clk), .reset(reset), 

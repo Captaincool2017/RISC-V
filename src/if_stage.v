@@ -17,7 +17,7 @@ module if_stage (
     // Instruction Memory
     reg [31:0] instruction_memory [0:1023];
     initial begin
-        $readmemh("D:/github/Cline_test/firmware/build/firmware.mem", instruction_memory);
+        $readmemh("firmware/build/firmware.mem", instruction_memory);
     end
 
     assign pc_out = pc;
@@ -41,7 +41,6 @@ module if_stage (
         end else begin
             instruction_out = raw_instr;
             pc_plus_4_out = pc + 4;
-            $display("Time: %0t | PC: %h | ALU Result: %h", $time, pc, instruction_out);
         end
     end
 endmodule

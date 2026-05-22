@@ -20,7 +20,8 @@ if len(bindata) > MAX_BYTES:
 # Pad with NOPs (0x00000013) if the file size isn't a perfect multiple of 4 bytes
 remainder = len(bindata) % 4
 if remainder != 0:
-    bindata += b'\x13\x00\x00\x00' * ((4 - remainder) // 4)
+    pad_bytes = 4 - remainder
+    bindata += b'\x13\x00\x00\x00'[:pad_bytes]
 
 # Write out as 32-bit little-endian hex strings
 with open(output_file, 'w') as f:

@@ -110,8 +110,7 @@ module ex_stage (
         alu_result_out = 32'h00000000;
         write_data_out = operand2_forwarded; 
         branch_taken_out = 1'b0;
-        branch_target_out = 32'h00000000;
-        div_mul_stall_out = div_active; 
+        branch_target_out = 32'h00000000; 
         
         alu_op2 = alu_src_in ? immediate_in : operand2_forwarded;
 

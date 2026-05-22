@@ -28,11 +28,21 @@ module tb_core;
         $finish;
     end
 
+    // PC trace — prints every cycle after reset
+    always @(posedge clk) begin
+        if (!reset) begin
+            $display("Time: %0t | PC: %h | Instr: %h", 
+                    $time, 
+                    dut.IF.pc,           // access IF stage's pc register
+                    dut.IF.raw_instr);   // access the fetched instruction
+        end
+    end
+
     // Continuous Monitor: Watch the Memory Array directly!
     // 0x07FC / 4 = Word Index 511
     always @(posedge clk) begin
         // Wait for the default 'deadbeef' initialization to be overwritten
-        if (dut.MEM.data_memory[511] != 32'hdeadbeef) begin
+        if (!reset && dut.MEM.data_memory[511] != 32'hdeadbeef) begin
             $display("\n========== TEST RESULTS ==========");
             
             if (dut.MEM.data_memory[511] == 32'h1) begin
