@@ -38,12 +38,18 @@ module core (
 
     // --- Instantiations ---
     if_stage IF (
-        .clk(clk), .reset(reset), .stall_en(pc_if_id_stall), .flush_en(flush_en),
-        .ex_branch_taken_in(ex_branch_taken), .ex_branch_target_in(ex_branch_target), 
-        .pc_plus_4_out(if_pc_plus_4), .instruction_out(if_instr), .pc_out(pc_out)
+        .clk(clk), 
+        .reset(reset), 
+        .stall_en(pc_if_id_stall), 
+        .flush_en(flush_en),
+        .ex_branch_taken_in(mem_branch_taken), 
+        .ex_branch_target_in(mem_alu_res), 
+        .pc_plus_4_out(if_pc_plus_4), 
+        .instruction_out(if_instr), 
+        .pc_out(pc_out)
     );
     pipeline_register_if_id IF_ID (
-        .clk(clk), .reset(reset), .stall_en(pc_if_id_stall), .flush_en(flush_en), 
+        .clk(clk), .reset(reset), .stall_en(pc_if_id_stall), .flush_en(mem_branch_taken), 
         .pc_plus_4_in(if_pc_plus_4), .instruction_in(if_instr), 
         .pc_plus_4_out(id_pc_plus_4), .instruction_out(id_instr)
     );
@@ -123,7 +129,7 @@ module core (
         .id_ex_rs1_addr_in(ex_rs1), 
         .id_ex_rs2_addr_in(ex_rs2), 
         .ex_branch_in(ex_branch), 
-        .ex_branch_taken_in(ex_branch_taken), 
+        .ex_branch_taken_in(mem_branch_taken), 
         .div_mul_stall_in(div_mul_stall), 
         .stall_en_out(stall_en), 
         .flush_en_out(flush_en),

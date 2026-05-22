@@ -15,7 +15,8 @@ with open(input_file, 'rb') as f:
 # Truncate the binary if GCC added huge padding for other memory sections.
 MAX_BYTES = 4096
 if len(bindata) > MAX_BYTES:
-    bindata = bindata[:MAX_BYTES]
+    print(f"ERROR: firmware.bin is {len(bindata)} bytes — exceeds 4KB instruction memory!")
+    sys.exit(1)
 
 # Pad with NOPs (0x00000013) if the file size isn't a perfect multiple of 4 bytes
 remainder = len(bindata) % 4

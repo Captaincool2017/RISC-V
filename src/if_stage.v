@@ -17,7 +17,11 @@ module if_stage (
     // Instruction Memory
     reg [31:0] instruction_memory [0:1023];
     initial begin
-        $readmemh("firmware/build/firmware.mem", instruction_memory);
+        `ifdef MEM_FILE
+            $readmemh(`MEM_FILE, instruction_memory);
+        `else
+            $readmemh("firmware/build/firmware.mem", instruction_memory);
+        `endif
     end
 
     assign pc_out = pc;

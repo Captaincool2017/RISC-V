@@ -8,10 +8,13 @@ read_verilog [file join $project_dir "tb/tb_core.v"]
 set_property top tb_core [get_filesets sim_1]
 update_compile_order -fileset sim_1
 
-# Tell Vivado to run indefinitely until it hits a $finish command
+# Pass the absolute firmware path as a Verilog define
+set mem_file [file join $project_dir "firmware/build/firmware.mem"]
+set_property -name {xsim.simulate.xsim.more_options} -value "-testplusarg MEMFILE=$mem_file" -objects [get_filesets sim_1]
+set_property verilog_define "MEM_FILE=\"$mem_file\"" [get_filesets sim_1]
+
 set_property -name {xsim.simulate.runtime} -value {all} -objects [get_filesets sim_1]
 
-# Run simulation
 reset_simulation
 launch_simulation
 

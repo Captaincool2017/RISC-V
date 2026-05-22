@@ -9,8 +9,17 @@ Write-Host "=========================================" -ForegroundColor Cyan
 Write-Host " 1. Building Firmware in WSL" -ForegroundColor Cyan
 Write-Host "=========================================" -ForegroundColor Cyan
 
-if (-not (Test-Path "$FirmwareDir\build")) {
-    New-Item -ItemType Directory -Path "$FirmwareDir\build" | Out-Null
+# Copy firmware.mem to the XSim working directory so relative path resolves
+$xsimDir = "$ProjectRoot\sim_proj\sim_proj.sim\sim_1\behav\xsim"
+if (Test-Path $xsimDir) {
+    $destDir = "$xsimDir\firmware\build"
+    if (-not (Test-Path $destDir)) {
+        New-Item -ItemType Directory -Path $destDir | Out-Null
+    }
+    Copy-Item "$FirmwareDir\build\firmware.mem" -Destination $destDir -Force
+    Write-Host "Copied firmware.mem to XSim directory" -ForegroundColor Green
+} else {
+    Write-Host "Warning: XSim directory not found, skipping copy of firmware.mem" -ForegroundColor Yellow
 }
 
 $DriveLetter = $FirmwareDir.Substring(0, 1).ToLower()
@@ -18,7 +27,7 @@ $RestOfPath = $FirmwareDir.Substring(2).Replace('\', '/')
 $WslFirmwareDir = "/mnt/$DriveLetter$RestOfPath"
 
 # CHANGED: Compiles *.c so any C file in the directory gets compiled!
-$gccCommand = "riscv64-unknown-elf-gcc -march=rv32i -mabi=ilp32 -nostdlib -Ttext=0x00000000 -O1 -o $WslFirmwareDir/build/firmware.elf $WslFirmwareDir/src/start.S $WslFirmwareDir/src/*.c"
+$gccCommand = "riscv64-unknown-elf-gcc -march=rv32i -mabi=ilp32 -nostdlib -T$WslFirmwareDir/src/link.ld -O1 -o $WslFirmwareDir/build/firmware.elf $WslFirmwareDir/src/start.S $WslFirmwareDir/src/*.c"
 wsl -e bash -c $gccCommand
 
 if ($LASTEXITCODE -ne 0) { Write-Host "Error compiling C code!" -ForegroundColor Red; exit }
