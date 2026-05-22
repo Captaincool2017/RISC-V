@@ -7,7 +7,7 @@ sim_proj/
 *.pb
 *.ini
 .Xil/
-*.txt
+dfx_runtime.txt
 
 # Build artifacts
 firmware/build/
