@@ -38,6 +38,15 @@ module tb_core;
         end
     end
 
+    always @(posedge clk) begin
+        if (!reset && dut.MEM.mem_write_in) begin
+            $display("STORE at addr=%h data=%h funct3=%b", 
+                    dut.MEM.alu_result_in, 
+                    dut.MEM.write_data_in,
+                    dut.MEM.funct3_in);
+        end
+    end
+
     // Continuous Monitor: Watch the Memory Array directly!
     // 0x07FC / 4 = Word Index 511
     always @(posedge clk) begin

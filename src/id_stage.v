@@ -9,6 +9,7 @@ module id_stage (
     input [31:0] wb_write_data_in,
     input        wb_reg_write_in,
 
+    output reg [2:0]  funct3_out,
     output reg [31:0] operand1_out,
     output reg [31:0] operand2_out,
     output reg [31:0] immediate_out,
@@ -61,16 +62,35 @@ module id_stage (
     wire [31:0] rs2_val = (wb_reg_write_in && (wb_rd_in == rs2) && (rs2 != 5'b00000)) ? wb_write_data_in : registers[rs2];
 
     always @(*) begin
-        operand1_out = 32'h00000000; operand2_out = 32'h00000000; immediate_out = 32'h00000000;
-        rd_out = 5'b00000; alu_op_out = 4'b0000; mem_read_out = 1'b0; mem_write_out = 1'b0; mem_to_reg_out = 1'b0;
-        reg_write_out = 1'b0; branch_out = 1'b0; jal_out = 1'b0; jalr_out = 1'b0;
-        rs1_data_out = rs1_val; rs2_data_out = rs2_val;
-        rs1_addr_out = rs1; rs2_addr_out = rs2; mul_en_out = 1'b0; div_en_out = 1'b0; alu_src_out = 1'b0; 
+        funct3_out = funct3;
+        operand1_out = 32'h00000000; 
+        operand2_out = 32'h00000000; 
+        immediate_out = 32'h00000000;
+        rd_out = 5'b00000; 
+        alu_op_out = 4'b0000; 
+        mem_read_out = 1'b0; 
+        mem_write_out = 1'b0; 
+        mem_to_reg_out = 1'b0;
+        reg_write_out = 1'b0; 
+        branch_out = 1'b0; 
+        jal_out = 1'b0; 
+        jalr_out = 1'b0;
+        rs1_data_out = rs1_val; 
+        rs2_data_out = rs2_val;
+        rs1_addr_out = rs1; 
+        rs2_addr_out = rs2; 
+        mul_en_out = 1'b0; 
+        div_en_out = 1'b0; 
+        alu_src_out = 1'b0; 
 
         case (opcode)
             7'b0110011: begin // R-type instructions
-                rd_out = rd; reg_write_out = 1'b1; operand1_out = rs1_val; operand2_out = rs2_val;
-                rs1_addr_out = rs1; rs2_addr_out = rs2;
+                rd_out = rd; 
+                reg_write_out = 1'b1; 
+                operand1_out = rs1_val; 
+                operand2_out = rs2_val;
+                rs1_addr_out = rs1; 
+                rs2_addr_out = rs2;
                 case ({funct7, funct3})
                     {7'b0000000, 3'b000}: alu_op_out = 4'b0000; // ADD
                     {7'b0100000, 3'b000}: alu_op_out = 4'b0001; // SUB
@@ -94,8 +114,12 @@ module id_stage (
                 endcase
             end
             7'b0010011: begin // I-type instructions
-                rd_out = rd; reg_write_out = 1'b1; operand1_out = rs1_val; immediate_out = i_immediate;
-                rs1_addr_out = rs1; alu_src_out = 1'b1;
+                rd_out = rd; 
+                reg_write_out = 1'b1; 
+                operand1_out = rs1_val; 
+                immediate_out = i_immediate;
+                rs1_addr_out = rs1; 
+                alu_src_out = 1'b1;
                 case (funct3)
                     3'b000: alu_op_out = 4'b0000; // ADDI
                     3'b010: alu_op_out = 4'b0011; // SLTI

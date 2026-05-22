@@ -11,6 +11,9 @@ module core (
     wire [4:0]  id_ex_rd, id_ex_rs1, id_ex_rs2;
     wire [3:0]  id_ex_alu_op;
     wire        id_ex_mem_read, id_ex_mem_write, id_ex_mem_to_reg, id_ex_reg_write, id_ex_branch, id_ex_jal, id_ex_jalr, id_ex_mul, id_ex_div, id_ex_alu_src;
+    wire [2:0] id_ex_funct3;
+    wire [2:0] ex_mem_funct3;
+    wire [2:0] mem_funct3;
     wire [31:0] ex_pc_plus_4, ex_op1, ex_op2, ex_imm;
     wire [4:0]  ex_rd, ex_rs1, ex_rs2;
     wire [3:0]  ex_alu_op;
@@ -46,7 +49,7 @@ module core (
     );
     id_stage ID (
         .clk(clk), .reset(reset), .instruction_in(id_instr), .pc_plus_4_in(id_pc_plus_4), 
-        .wb_rd_in(wb_rd), .wb_write_data_in(wb_result), .wb_reg_write_in(wb_reg_write),
+        .funct3_out(id_ex_funct3), .wb_rd_in(wb_rd), .wb_write_data_in(wb_result), .wb_reg_write_in(wb_reg_write),
         .operand1_out(id_ex_op1), .operand2_out(id_ex_op2), .immediate_out(id_ex_imm), .rd_out(id_ex_rd), .alu_op_out(id_ex_alu_op),
         .mem_read_out(id_ex_mem_read), .mem_write_out(id_ex_mem_write), .mem_to_reg_out(id_ex_mem_to_reg), .reg_write_out(id_ex_reg_write),
         .branch_out(id_ex_branch), .jal_out(id_ex_jal), .jalr_out(id_ex_jalr), .rs1_addr_out(id_ex_rs1), .rs2_addr_out(id_ex_rs2), .mul_en_out(id_ex_mul), .div_en_out(id_ex_div), .alu_src_out(id_ex_alu_src)
@@ -54,10 +57,10 @@ module core (
     pipeline_register_id_ex ID_EX (
         .clk(clk), .reset(reset), .stall_en(stall_en), .flush_en(flush_en | id_ex_flush),
         .pc_plus_4_in(id_pc_plus_4), .operand1_in(id_ex_op1), .operand2_in(id_ex_op2), .immediate_in(id_ex_imm), .rd_in(id_ex_rd),
-        .alu_op_in(id_ex_alu_op), .mem_read_in(id_ex_mem_read), .mem_write_in(id_ex_mem_write), .mem_to_reg_in(id_ex_mem_to_reg), .reg_write_in(id_ex_reg_write),
+        .alu_op_in(id_ex_alu_op), .funct3_in(id_ex_funct3), .mem_read_in(id_ex_mem_read), .mem_write_in(id_ex_mem_write), .mem_to_reg_in(id_ex_mem_to_reg), .reg_write_in(id_ex_reg_write),
         .branch_in(id_ex_branch), .jal_in(id_ex_jal), .jalr_in(id_ex_jalr), .rs1_addr_in(id_ex_rs1), .rs2_addr_in(id_ex_rs2), .mul_en_in(id_ex_mul), .div_en_in(id_ex_div), .alu_src_in(id_ex_alu_src),
         .pc_plus_4_out(ex_pc_plus_4), .operand1_out(ex_op1), .operand2_out(ex_op2), .immediate_out(ex_imm), .rd_out(ex_rd), .alu_op_out(ex_alu_op),
-        .mem_read_out(ex_mem_read), .mem_write_out(ex_mem_write), .mem_to_reg_out(ex_mem_to_reg), .reg_write_out(ex_reg_write),
+        .funct3_out(ex_mem_funct3), .mem_read_out(ex_mem_read), .mem_write_out(ex_mem_write), .mem_to_reg_out(ex_mem_to_reg), .reg_write_out(ex_reg_write),
         .branch_out(ex_branch), .jal_out(ex_jal), .jalr_out(ex_jalr), .rs1_addr_out(ex_rs1), .rs2_addr_out(ex_rs2), .mul_en_out(ex_mul), .div_en_out(ex_div), .alu_src_out(ex_alu_src)
     );
     ex_stage EX (
@@ -77,17 +80,17 @@ module core (
     wire mem_branch_flag;
     pipeline_register_ex_mem EX_MEM (
         .clk(clk), .reset(reset), .stall_en(stall_en), .flush_en(1'b0), // Changed to 1'b0 so branch writes aren't lost
-        .pc_plus_4_in(ex_pc_plus_4), .alu_result_in(ex_alu_res), .write_data_in(ex_write_data), .rd_in(ex_rd), 
+        .pc_plus_4_in(ex_pc_plus_4), .alu_result_in(ex_alu_res), .funct3_in(ex_mem_funct3), .write_data_in(ex_write_data), .rd_in(ex_rd), 
         .mem_read_in(ex_mem_read), .mem_write_in(ex_mem_write), .mem_to_reg_in(ex_mem_to_reg), .reg_write_in(ex_reg_write), 
         .jal_in(ex_jal), .jalr_in(ex_jalr), .branch_taken_in(ex_branch_taken),
-        .pc_plus_4_out(mem_pc_plus_4), .alu_result_out(mem_alu_res), .write_data_out(mem_write_data), .rd_out(mem_rd), 
+        .pc_plus_4_out(mem_pc_plus_4), .alu_result_out(mem_alu_res), .funct3_out(mem_funct3), .write_data_out(mem_write_data), .rd_out(mem_rd), 
         .mem_read_out(mem_mem_read), .mem_write_out(mem_mem_write), .mem_to_reg_out(mem_mem_to_reg), .reg_write_out(mem_reg_write), 
         .jal_out(mem_jal), .jalr_out(mem_jalr), .branch_taken_out(mem_branch_taken) 
     );
     mem_stage MEM (
         .clk(clk), .reset(reset), 
         .alu_result_in(mem_alu_res), .write_data_in(mem_write_data), .mem_read_in(mem_mem_read), .mem_write_in(mem_mem_write), 
-        .read_data_out(mem_read_data)
+        .funct3_in(mem_funct3), .read_data_out(mem_read_data)
     );
     pipeline_register_mem_wb MEM_WB (
         .clk(clk), .reset(reset), .stall_en(stall_en),
